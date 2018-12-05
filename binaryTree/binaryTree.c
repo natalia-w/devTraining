@@ -18,13 +18,6 @@ struct Tree
 	t_node* m_root;
 };
 
-typedef enum
-{
-	PRE_ORDER,
-	IN_ORDER,
-	POST_ORDER
-}TreeTraverse;
-
 t_tree* TreeCreate(){
 	t_tree* _tree;
 	_tree = (t_tree*)malloc(sizeof(t_tree));
@@ -56,43 +49,19 @@ void TreeDestroy(t_tree* _tree){
 	}
 	TreeDestroyByRootRec(_tree->m_root);
 }
-/*STATIC t_node* TreeInsertNodeRec(t_node* _root, int numToInsert){
-	t_node* newNode;
-	t_node* fatherNode = NULL;
-	int tagMallocFailed = 0;
-	if (_root == NULL){
-		newNode = createNode(numToInsert, fatherNode);
-		if (newNode == NULL){
-		tagMallocFailed = 1;
-		}		
-		return newNode; 
-	}
-	if (_root->m_data < numToInsert){
-		fatherNode = _root;
-		_root->m_right = TreeInsertNodeRec(_root->m_right, numToInsert);
-	}
-	else if (_root->m_data > numToInsert){
-		fatherNode = _root;
-		_root->m_left = TreeInsertNodeRec(_root->m_left, numToInsert);
-	}
-	if (tagMallocFailed == 1){
-		return; 
-	}
-	return _root;
-}*/
 
 STATIC t_node* SearchRoot(t_node* _root, int num){
 	if (_root == NULL){
 		return NULL;
 	}
 	if (_root->m_data < num ){
-		if(_root->m_left == NULL){
+		if(_root->m_right == NULL){
 			return _root;
 		}
-		return SearchRoot(_root->m_left, num);
+		return SearchRoot(_root->m_right, num);
 	}
 	if (_root->m_data > num){
-		if(_root->m_right == NULL){
+		if(_root->m_left == NULL){
 			return _root;
 		}
 		return SearchRoot(_root->m_left, num);
@@ -100,8 +69,18 @@ STATIC t_node* SearchRoot(t_node* _root, int num){
 	if (_root->m_data = num){
 		return _root;
 	}
+	return _root;
+}
 
-
+STATIC t_node* NodeAdd(t_node* _father, int _data){
+	t_node* newNode = (t_node*)malloc(sizeof(t_node));
+	if (newNode != NULL){
+		newNode->m_data = _data;
+		newNode->m_left = NULL;
+		newNode->m_right = NULL;
+		newNode->m_father = _father; 
+	}
+	return newNode;	
 }
 
 ADTErr TreeInsert(t_tree* _tree, int _data){
@@ -111,28 +90,86 @@ ADTErr TreeInsert(t_tree* _tree, int _data){
 		return ERR_NOT_INITIALIZED;
 	}
 	rootNode = SearchRoot(_tree->m_root, _data);
-	if (rootNode == NULL){
-		newNode = (t_node*)malloc(sizeof(t_node));
+	if (rootNode == NULL || rootNode != NULL && rootNode->m_data != _data){
+		newNode = NodeAdd(rootNode, _data);
 		if (newNode == NULL){
 			return ERR_ALLOCATION_FAILED;		
 		}
-		NodeAdd(t_node* 
 	}
+	if (rootNode == NULL){
+		_tree->m_root = newNode;
+	}
+	else{
+		if (rootNode->m_data != _data){
+			if(rootNode->m_data > _data){
+				rootNode->m_left = newNode;
+			}
+			else{
+				rootNode->m_right = newNode;
+			}
+		}
+	} 
 	return ERR_OK;
 }
 
-
-/*int treeIsDataFoundRec(t_node* _node, int _data){
-
-}
-
-int treeIsDataFound(t_tree* _tree, int _data){
-	if (_tree == NULL){
+STATIC int SearchNum(t_node* _root, int num){
+	if (_root == NULL){
 		return 0;	
 	}
-	return treeIsDataFoundRec(_tree->m_root, _data);
+	else{
+		if (_root->m_data == num){
+			return 1;
+		}
+		else{
+			return (SearchNum(_root->m_left, num) + SearchNum(_root->m_right, num)); 
+		}
+	}
+} 
 
-}*/
+int TreeIsDataFound(t_tree* _tree, int _data){
+	int instancesOfNum = 0;
+	if (_tree == NULL){
+		return 0;
+	}
+	if (_tree->m_root == NULL){
+		return 0;
+	}
+	instancesOfNum = SearchNum(_tree->m_root, _data);
+	if (instancesOfNum == 0){
+		return instancesOfNum;
+	}
+	else{
+		return 1;
+	}
+}
+
+void NodesPrint(t_node* _root, TreeTraverse _traverseMode){
+	if (_root == NULL){
+		return;
+	}
+	if (_traverseMode == PRE_ORDER){
+		printf(" %d, ", _root->m_data);
+	}
+	NodesPrint(_root->m_left, _traverseMode);
+	if (_traverseMode == IN_ORDER){
+		printf(" %d, ", _root->m_data);
+	}
+	NodesPrint(_root->m_right, _traverseMode);
+	if (_traverseMode == POST_ORDER){
+		printf(" %d, ", _root->m_data);
+	}
+}
+
+void TreePrint(t_tree* _tree, TreeTraverse _traverseMode){
+	if(_tree == NULL){
+		printf("The tree is NULL \n");
+		return;
+	}
+	NodesPrint(_tree->m_root, _traverseMode);
+	printf("\n");
+	return;
+}
+
 
 
 	
